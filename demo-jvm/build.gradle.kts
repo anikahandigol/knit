@@ -1,3 +1,5 @@
+import tiktok.knit.plugin.KnitExtension
+
 plugins {
     kotlin("jvm")
     id("com.gradleup.shadow") version "8.3.6"
@@ -21,3 +23,9 @@ tasks.test {
 application {
     mainClass.set("knit.demo.MainKt")
 }
+
+extensions.getByType<KnitExtension>().apply {
+    dependencyTreeOutputPath.set("build/knit_dependency.json")
+}
+
+
