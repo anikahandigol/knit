@@ -1,13 +1,15 @@
 package knit.demo
 
-import knit.Component
 import knit.Provides
+import knit.di
 
-@Component
 @Provides
-class MonitorComponent(
-    @Provides val eventBus: EventBus,
-    @Provides val auditLogger: AuditLogger,
-    @Provides val performanceMonitor: PerformanceMonitor,
-    @Provides val objectGraphAnalyzer: ObjectGraphAnalyzer,
-)
+class MonitorComponent {
+    private val store: MemoryStoreComponent by di
+
+    fun monitor(key: String) {
+        println("Monitoring key: $key")
+        val value = store.retrieve(key)
+        println("Value: $value")
+    }
+}

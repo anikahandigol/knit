@@ -1,13 +1,14 @@
 package knit.demo
 
-import knit.Component
 import knit.Provides
 
-@Component
 @Provides
-class MemoryStoreComponent(
-    @Provides val fileSystem: MemoryFileSystem,
-    @Provides val refManager: MemoryReferenceManager,
-    @Provides val objectStore: MemoryObjectStore,
-)
-
+class MemoryStoreComponent {
+    fun store(key: String, value: String) {
+        println("Stored [$key] = $value")
+    }
+    fun retrieve(key: String): String? {
+        println("Retrieving [$key]")
+        return null
+    }
+}
