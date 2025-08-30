@@ -204,18 +204,27 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
 
     simulation.on("tick", () => {
       link.attr("points", (d: any) => {
-        const sx = d.source.x as number
-        const sy = d.source.y as number
-        const tx = d.target.x as number
-        const ty = d.target.y as number
-        const mx = (sx + tx) / 2
-        const my = (sy + ty) / 2
-        return `${sx},${sy} ${mx},${my} ${tx},${ty}`
-      })
+        const sx = d.source.x as number;
+        const sy = d.source.y as number;
+        const tx = d.target.x as number;
+        const ty = d.target.y as number;
+        const mx = (sx + tx) / 2;
+        const my = (sy + ty) / 2;
+        // Slight perpendicular offset to avoid a 180° vertex (which can hide marker-mid)
+        const dx = tx - sx;
+        const dy = ty - sy;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len;
+        const ny = dx / len;
+        const offset = Math.min(2, len * 0.02); // up to 2px
+        const mx2 = mx + nx * offset;
+        const my2 = my + ny * offset;
+        return `${sx},${sy} ${mx2},${my2} ${tx},${ty}`;
+      });
 
-      node.attr("cx", (d: any) => d.x).attr("cy", (d: any) => d.y)
-      label.attr("x", (d: any) => d.x).attr("y", (d: any) => d.y)
-    })
+      node.attr("cx", (d: any) => d.x).attr("cy", (d: any) => d.y);
+      label.attr("x", (d: any) => d.x).attr("y", (d: any) => d.y);
+    });
 
     return () => {
       simulation.stop()
