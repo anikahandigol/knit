@@ -1,11 +1,5 @@
-[![TikTok](https://img.shields.io/badge/TikTok-Android-black.svg?style=flat-square&logo=tiktok)](https://kotlinlang.org)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-hotpink.svg?style=flat-square&logo=kotlin)](https://kotlinlang.org)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tiktok/knit/test.yaml?branch=master&style=flat-square)
-[![GitHub license](https://img.shields.io/github/license/tiktok/knit?style=flat-square)](https://github.com/tiktok/knit/blob/master/LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.tiktok.knit/knit-plugin?style=flat-square&color=coral)](https://central.sonatype.com/artifact/io.github.tiktok.knit/knit-plugin)
-[![Gradle](https://img.shields.io/gradle-plugin-portal/v/io.github.tiktok.knit.plugin?style=flat-square&color=lightskyblue)](https://plugins.gradle.org/plugin/io.github.tiktok.knit.plugin)
+<img width="945" height="375" alt="image" src="https://github.com/user-attachments/assets/dd8942cd-c3ae-4011-acc9-c30f0d066023" />
 
-![Knit Banner](docs/main_logo.svg)
 
 # KnitNeedle
 
