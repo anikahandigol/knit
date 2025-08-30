@@ -1,10 +1,10 @@
 export interface Node {
   name: string
-  is_optimistic: boolean
-  is_source_error: boolean
-  error_message?: string
-  is_in_last_update: boolean
-  has_upstream_error: boolean
+  isOptimistic: boolean
+  isSourceError: boolean
+  errorMessage?: string
+  isInLastUpdate: boolean
+  hasUpstreamError: boolean
   // D3 simulation properties
   x?: number
   y?: number
@@ -18,7 +18,7 @@ export interface AdjacencyList {
 }
 
 export interface VSCodeMessage {
-  type: "navigateToNode" | "exportGraph" | "update"
+  type: "navigateToNode" | "exportGraph" | "update" | "requestGraphData" | "graphData"
   nodeId?: string
   data?: any
 }

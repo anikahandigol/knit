@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import * as d3 from "d3"
 import { createRoot } from "react-dom/client"
 
-import { AdjacencyList } from "./types"
+import { AdjacencyList, VSCodeMessage } from "./types"
 interface GraphProps {
   data: AdjacencyList
 }
@@ -36,6 +36,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
 
     return () => window.removeEventListener("resize", handleResize)
   }, [])
+
 
   useEffect(() => {
     if (!data || !svgRef.current) return
@@ -89,7 +90,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
 
     svg.attr("width", width).attr("height", height)
 
-    const nodes = Object.values(data.nodes).map((n) => ({ ...n }))
+  const nodes = Object.values(data.nodes).map((n) => ({ ...n }))
     const links = data.edges.map(([source, target]) => ({ source, target }))
 
     const simulation = d3
@@ -128,9 +129,9 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       .append("circle")
       .attr("r", 12)
       .attr("fill", (d: any) => {
-        if (d.is_source_error) return "#dc2626"
-        if (d.has_upstream_error) return "#f87171"
-        if (d.is_optimistic) return "#10b981"
+        if (d.isSourceError) return "#dc2626"
+        if (d.hasUpstreamError) return "#f87171"
+        if (d.isOptimistic) return "#10b981"
         return "#6b7280"
       })
       .style("cursor", "pointer")
@@ -231,9 +232,9 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       .attr("fill", (d: any) => {
         if (hoveredNode === d.name) return "#8b5cf6"
         if (selectedNodes.has(d.name)) return "#8b5cf6"
-        if (d.is_source_error) return "#dc2626"
-        if (d.has_upstream_error) return "#f87171"
-        if (d.is_optimistic) return "#10b981"
+  if (d.isSourceError) return "#dc2626"
+  if (d.hasUpstreamError) return "#f87171"
+  if (d.isOptimistic) return "#10b981"
         return "#6b7280"
       })
 
@@ -302,63 +303,30 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
   )
 }
 
-const sampleData: AdjacencyList = {
-  nodes: {
-    "main.ts": {
-      name: "main.ts",
-      is_optimistic: false,
-      is_source_error: false,
-      is_in_last_update: true,
-      has_upstream_error: false,
-    },
-    "auth.ts": {
-      name: "auth.ts",
-      is_optimistic: true,
-      is_source_error: false,
-      is_in_last_update: false,
-      has_upstream_error: false,
-    },
-    "database.ts": {
-      name: "database.ts",
-      is_optimistic: false,
-      is_source_error: true,
-      error_message: "Connection failed",
-      is_in_last_update: false,
-      has_upstream_error: false,
-    },
-    "api.ts": {
-      name: "api.ts",
-      is_optimistic: false,
-      is_source_error: false,
-      is_in_last_update: true,
-      has_upstream_error: true,
-    },
-    "utils.ts": {
-      name: "utils.ts",
-      is_optimistic: false,
-      is_source_error: false,
-      is_in_last_update: true,
-      has_upstream_error: false,
-    },
-    "config.ts": {
-      name: "config.ts",
-      is_optimistic: false,
-      is_source_error: false,
-      is_in_last_update: false,
-      has_upstream_error: false,
-    },
-  },
-  edges: [
-    ["main.ts", "auth.ts"],
-    ["main.ts", "api.ts"],
-    ["auth.ts", "database.ts"],
-    ["api.ts", "database.ts"],
-    ["api.ts", "utils.ts"],
-    ["utils.ts", "config.ts"],
-  ],
-}
+const GraphDemo: React.FC = () => {
+  const [data, setData] = useState<AdjacencyList>({ nodes: {}, edges: [] })
 
-const GraphDemo: React.FC = () => <Graph data={sampleData} />
+  useEffect(() => {
+    // Request initial data from the extension
+  const vscode = (window as any).vscode || (window as any).acquireVsCodeApi?.()
+    ;(window as any).vscode = vscode
+    vscode?.postMessage({ type: "requestGraphData" })
+
+    const handler = (event: MessageEvent<VSCodeMessage>) => {
+      const msg = event.data
+      if (msg?.type === "graphData" && msg.data) {
+        setData(msg.data as AdjacencyList)
+      }
+      if (msg?.type === "update" && msg.data) {
+        setData(msg.data as AdjacencyList)
+      }
+    }
+    window.addEventListener("message", handler)
+    return () => window.removeEventListener("message", handler)
+  }, [])
+
+  return <Graph data={data} />
+}
 
 const container = document.getElementById("app")
 if (container) {

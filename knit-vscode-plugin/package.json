@@ -23,6 +23,14 @@
       {
         "command": "knit.watchJar",
         "title": "Knit: Watch and Build ShadowJar"
+      },
+      {
+        "command": "knit.refreshGraph",
+        "title": "Knit: Refresh Graph"
+      },
+      {
+        "command": "knit.loadGraphFromFile",
+        "title": "Knit: Load Graph from File..."
       }
     ],
     "keybindings": [
