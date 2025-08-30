@@ -7,11 +7,22 @@
 
 ![Knit Banner](docs/main_logo.svg)
 
-# Knit
+# KnitNeedle
 
-Knit is a purely static, compile-time safe DI framework that leverages Kotlin language features to provide zero-intermediary dependency injection with exceptional ease of use.
+KnitNeedle is a dependency injection visualisation framework built directly on top of Knit, utilising interactive graphs to map out dependency relationships, flag out errors, all from the comfort of your own IDE. KnitNeedle is lightning fast, informative, and packed with optimisations to keep things moving.
 
-Knit means connecting (dependencies between code), which is what our framework does.
+## Optimistic Logging
+
+KnitNeedle improves upon Knit's internal logging system -- Knit does not produce a JSON dump if compilation was unsuccessful, meaning that such errors are not very visible to the user. To solve this issue, KnitNeedle employs optimistic logging -- meaning that even if dependency injection related errors occur, the exact classes that led to the flagged issue(s) appear in the JSON dump.
+
+## Upstream Error Propagation
+
+This provides KnitNeedle with the unique ability to include errored classes in its dependency visualisation, and therefore also show affected upstream classes. This is reflected in the visualised dependency graph, which provides programmers a clear view of what classes are affected, and how to quickly resolve such issues.
+
+## Instant Feedback System
+
+KnitNeedle quickly updates dependency graphs in response to code changes -- by taking advantage of Kotlin's incremental compilation capabilities, KnitNeedle builds upon Knit's logging system to only capture logs for parts of the codebase that have to be recompiled. This offers a significant speed increase, as KnitNeedle no longer has to traverse the whole codebase just to update a small set of nodes -- a big plus for large codebases.
+
 
 ## Basic Usage
 
