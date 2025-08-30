@@ -18,8 +18,11 @@ export interface AdjacencyList {
 }
 
 export interface VSCodeMessage {
-  type: "navigateToNode" | "exportGraph" | "update" | "requestGraphData" | "graphData"
+  type: "navigateToNode" | "exportGraph" | "update" | "navigateToEdge" | "requestGraphData" | "graphData" 
   nodeId?: string
+  sourceFile?: string
+  targetFile?: string
+  lineNumber?: number
   data?: any
 }
 

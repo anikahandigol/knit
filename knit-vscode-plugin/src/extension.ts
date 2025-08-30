@@ -79,6 +79,11 @@ export function activate(context: vscode.ExtensionContext) {
                 .catch(() => panel.webview.postMessage({ type: "graphData", data: getFallbackGraphData() }));
             }
             break;
+            handleNodeNavigation(message.nodeId)
+            break
+          case "navigateToEdge":
+            handleEdgeNavigation(message.sourceFile, message.targetFile, message.lineNumber)
+            break
           case "exportGraph":
             vscode.window.showInformationMessage("Exporting graph...");
             break;
@@ -337,4 +342,86 @@ function getFallbackGraphData(): AdjacencyList {
     ["utils.ts", "config.ts"],
   ];
   return { nodes, edges };
+}
+async function handleNodeNavigation(nodeId: string) {
+  try {
+    console.log(`[v0] Attempting to navigate to node: ${nodeId}`)
+
+    // Search for the file in the workspace
+    const files = await vscode.workspace.findFiles(`**/${nodeId}`, "**/node_modules/**", 10)
+    console.log(`[v0] Found ${files.length} files matching ${nodeId}`)
+
+    if (files.length > 0) {
+      console.log(`[v0] Opening file: ${files[0].fsPath}`)
+      const document = await vscode.workspace.openTextDocument(files[0])
+      const editor = await vscode.window.showTextDocument(document, vscode.ViewColumn.One)
+      console.log(`[v0] Successfully opened file in editor`)
+      vscode.window.showInformationMessage(`Opened: ${nodeId}`)
+    } else {
+      // If exact match not found, try without extension
+      const baseName = nodeId.replace(/\.[^/.]+$/, "")
+      console.log(`[v0] Trying alternative search for: ${baseName}`)
+      const alternativeFiles = await vscode.workspace.findFiles(`**/${baseName}.*`, "**/node_modules/**", 10)
+      console.log(`[v0] Found ${alternativeFiles.length} alternative files`)
+
+      if (alternativeFiles.length > 0) {
+        console.log(`[v0] Opening alternative file: ${alternativeFiles[0].fsPath}`)
+        const document = await vscode.workspace.openTextDocument(alternativeFiles[0])
+        const editor = await vscode.window.showTextDocument(document, vscode.ViewColumn.One)
+        vscode.window.showInformationMessage(`Opened: ${alternativeFiles[0].fsPath}`)
+      } else {
+        console.log(`[v0] No files found for: ${nodeId}`)
+        vscode.window.showWarningMessage(`File not found: ${nodeId}`)
+      }
+    }
+  } catch (error) {
+    console.error(`[v0] Error in handleNodeNavigation:`, error)
+    vscode.window.showErrorMessage(`Error opening file: ${error}`)
+  }
+}
+
+async function handleEdgeNavigation(sourceFile: string, targetFile: string, lineNumber = 1) {
+  try {
+    console.log(`[v0] Attempting to navigate to edge: ${sourceFile} -> ${targetFile}`)
+
+    // Search for the source file
+    const files = await vscode.workspace.findFiles(`**/${sourceFile}`, "**/node_modules/**", 10)
+    console.log(`[v0] Found ${files.length} source files matching ${sourceFile}`)
+
+    if (files.length > 0) {
+      console.log(`[v0] Opening source file: ${files[0].fsPath}`)
+      const document = await vscode.workspace.openTextDocument(files[0])
+      const editor = await vscode.window.showTextDocument(document, vscode.ViewColumn.One)
+
+      // Try to find the import line for the target file
+      const text = document.getText()
+      const lines = text.split("\n")
+      const targetBaseName = targetFile.replace(/\.[^/.]+$/, "")
+
+      let importLineNumber = 0
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        if (line.includes("import") && (line.includes(targetFile) || line.includes(targetBaseName))) {
+          importLineNumber = i
+          console.log(`[v0] Found import line at: ${i + 1}`)
+          break
+        }
+      }
+
+      // Navigate to the import line or specified line
+      const targetLine = importLineNumber > 0 ? importLineNumber : Math.max(0, lineNumber - 1)
+      const position = new vscode.Position(targetLine, 0)
+      editor.selection = new vscode.Selection(position, position)
+      editor.revealRange(new vscode.Range(position, position))
+      console.log(`[v0] Navigated to line: ${targetLine + 1}`)
+
+      vscode.window.showInformationMessage(`Opened ${sourceFile} at line ${targetLine + 1}`)
+    } else {
+      console.log(`[v0] Source file not found: ${sourceFile}`)
+      vscode.window.showWarningMessage(`Source file not found: ${sourceFile}`)
+    }
+  } catch (error) {
+    console.error(`[v0] Error in handleEdgeNavigation:`, error)
+    vscode.window.showErrorMessage(`Error navigating to edge: ${error}`)
+  }
 }

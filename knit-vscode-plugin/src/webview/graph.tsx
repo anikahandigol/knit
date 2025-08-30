@@ -15,6 +15,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
   const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set())
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const nodeRef = useRef<d3.Selection<SVGCircleElement, any, SVGGElement, unknown> | null>(null)
   const linkRef = useRef<d3.Selection<SVGPolylineElement, any, SVGGElement, unknown> | null>(null)
@@ -48,6 +49,9 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
+      .filter((event) => {
+        return event.type !== "dblclick"
+      })
       .on("zoom", (event) => {
         svg.select("g").attr("transform", event.transform)
       })
@@ -57,6 +61,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
     svg.on("click", (event) => {
       if (event.target === svg.node()) {
         setSelectedNodes(new Set())
+        setErrorMessage(null)
       }
     })
 
@@ -70,7 +75,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       .append("marker")
       .attr("id", (d) => `arrow-${d}`)
       .attr("viewBox", "0 -5 10 10")
-  .attr("refX", 6) // Better placement for marker-mid at the polyline vertex
+      .attr("refX", 6) // Better placement for marker-mid at the polyline vertex
       .attr("refY", 0)
       .attr("markerWidth", 6)
       .attr("markerHeight", 6)
@@ -116,14 +121,33 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       .append("polyline")
   .attr("fill", "none")
       .attr("stroke-width", 2)
-      .attr("marker-mid", "url(#arrow-normal)")
+      .attr("marker-end", "url(#arrow-normal)")
+      .style("cursor", "pointer")
+      .on("dblclick", (event, d: any) => {
+        event.stopPropagation()
+        const sourceName = typeof d.source === "string" ? d.source : d.source.name
+        const targetName = typeof d.target === "string" ? d.target : d.target.name
+
+        console.log("[v0] Double-click detected on edge:", sourceName, "->", targetName)
+
+        const vscode = (window as any).vscode
+        if (vscode) {
+          vscode.postMessage({
+            type: "navigateToEdge",
+            sourceFile: sourceName,
+            targetFile: targetName,
+            lineNumber: 1,
+          })
+          console.log("[v0] Message sent to VS Code for edge:", sourceName, "->", targetName)
+        } else {
+          console.log("[v0] VS Code API not available")
+        }
+      })
 
     linkRef.current = link
 
     const node = container
       .append("g")
-      .attr("stroke", "#fff")
-      .attr("stroke-width", 1.5)
       .selectAll("circle")
       .data(nodes)
       .enter()
@@ -151,9 +175,18 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
           newSelected.add(d.name)
         }
         setSelectedNodes(newSelected)
+
+        if (d.is_source_error && d.error_message) {
+          setErrorMessage(`${d.name}: ${d.error_message}`)
+        } else if (d.has_upstream_error) {
+          setErrorMessage(`${d.name}: Has upstream dependency errors`)
+        } else {
+          setErrorMessage(null)
+        }
       })
       .on("dblclick", (event, d: any) => {
         event.stopPropagation()
+        event.preventDefault()
         console.log("[v0] Double-click detected on node:", d.name)
 
         const vscode = (window as any).vscode
@@ -197,8 +230,9 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       .text((d: any) => d.name)
       .attr("font-size", 12)
       .attr("fill", "#ffffff")
-      .attr("dx", 15)
-      .attr("dy", 4)
+      .attr("dx", 0)
+      .attr("dy", 30)
+      .attr("text-anchor", "middle")
       .style("pointer-events", "none")
 
     labelRef.current = label
@@ -230,7 +264,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
     return () => {
       simulation.stop()
     }
-  }, [data, dimensions]) // Remove selectedNodes and hoveredNode from dependencies
+  }, [data, dimensions])
 
   useEffect(() => {
     if (!nodeRef.current || !linkRef.current || !labelRef.current) return
@@ -238,7 +272,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
     const hasSelection = selectedNodes.size > 0
 
     nodeRef.current
-      .attr("r", (d: any) => (selectedNodes.has(d.name) ? 16 : 12))
+      .attr("r", (d: any) => (selectedNodes.has(d.name) ? 14 : 12))
       .attr("opacity", (d: any) => {
         if (!hasSelection) return 1
         return selectedNodes.has(d.name) ? 1 : 0.3
@@ -273,7 +307,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       if (!hasSelection) return 1
       return selectedNodes.has(d.name) ? 1 : 0.5
     })
-  }, [selectedNodes, hoveredNode]) // Only depend on visual state changes
+  }, [selectedNodes, hoveredNode])
 
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
@@ -313,6 +347,36 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       <div id="graph-container" style={{ flex: 1 }}>
         <svg ref={svgRef} width="100%" height="100%"></svg>
       </div>
+
+      {errorMessage && (
+        <div
+          style={{
+            padding: "10px",
+            backgroundColor: "#fee2e2",
+            borderTop: "1px solid #fecaca",
+            color: "#dc2626",
+            fontSize: "14px",
+            fontWeight: "500",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>{errorMessage}</span>
+            <button
+              onClick={() => setErrorMessage(null)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#dc2626",
+                cursor: "pointer",
+                fontSize: "16px",
+                padding: "0 5px",
+              }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
