@@ -114,6 +114,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       .data(links)
       .enter()
       .append("polyline")
+  .attr("fill", "none")
       .attr("stroke-width", 2)
       .attr("marker-mid", "url(#arrow-normal)")
 
