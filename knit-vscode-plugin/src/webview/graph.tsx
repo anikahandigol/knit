@@ -17,7 +17,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
 
   const nodeRef = useRef<d3.Selection<SVGCircleElement, any, SVGGElement, unknown> | null>(null)
-  const linkRef = useRef<d3.Selection<SVGLineElement, any, SVGGElement, unknown> | null>(null)
+  const linkRef = useRef<d3.Selection<SVGPolylineElement, any, SVGGElement, unknown> | null>(null)
   const labelRef = useRef<d3.Selection<SVGTextElement, any, SVGGElement, unknown> | null>(null)
 
   useEffect(() => {
@@ -70,7 +70,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       .append("marker")
       .attr("id", (d) => `arrow-${d}`)
       .attr("viewBox", "0 -5 10 10")
-      .attr("refX", 15) // Put arrows back at the end of lines
+  .attr("refX", 6) // Better placement for marker-mid at the polyline vertex
       .attr("refY", 0)
       .attr("markerWidth", 6)
       .attr("markerHeight", 6)
@@ -110,12 +110,12 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
       .append("g")
       .attr("stroke", "#999")
       .attr("stroke-opacity", 0.6)
-      .selectAll("line")
+      .selectAll("polyline")
       .data(links)
       .enter()
-      .append("line")
+      .append("polyline")
       .attr("stroke-width", 2)
-      .attr("marker-end", "url(#arrow-normal)") // Use marker-end instead of marker-mid
+      .attr("marker-mid", "url(#arrow-normal)")
 
     linkRef.current = link
 
@@ -203,11 +203,15 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
     labelRef.current = label
 
     simulation.on("tick", () => {
-      link
-        .attr("x1", (d: any) => d.source.x)
-        .attr("y1", (d: any) => d.source.y)
-        .attr("x2", (d: any) => d.target.x)
-        .attr("y2", (d: any) => d.target.y)
+      link.attr("points", (d: any) => {
+        const sx = d.source.x as number
+        const sy = d.source.y as number
+        const tx = d.target.x as number
+        const ty = d.target.y as number
+        const mx = (sx + tx) / 2
+        const my = (sy + ty) / 2
+        return `${sx},${sy} ${mx},${my} ${tx},${ty}`
+      })
 
       node.attr("cx", (d: any) => d.x).attr("cy", (d: any) => d.y)
       label.attr("x", (d: any) => d.x).attr("y", (d: any) => d.y)
@@ -249,7 +253,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
         const sourceName = typeof d.source === "string" ? d.source : d.source.name
         return selectedNodes.has(sourceName) ? "#8b5cf6" : "#999"
       })
-      .attr("marker-end", (d: any) => {
+      .attr("marker-mid", (d: any) => {
         if (!hasSelection) return "url(#arrow-normal)"
         const sourceName = typeof d.source === "string" ? d.source : d.source.name
         return selectedNodes.has(sourceName) ? "url(#arrow-selected)" : "url(#arrow-dimmed)"
