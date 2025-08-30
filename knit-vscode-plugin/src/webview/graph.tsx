@@ -223,7 +223,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
     const hasSelection = selectedNodes.size > 0
 
     nodeRef.current
-      .attr("r", (d: KnitNode) => (selectedNodes.has(d.name) ? 16 : 12))
+      .attr("r", (d: any) => (selectedNodes.has(d.name) ? 16 : 12))
       .attr("opacity", (d: any) => {
         if (!hasSelection) return 1
         return selectedNodes.has(d.name) ? 1 : 0.3
