@@ -13,15 +13,15 @@ KnitNeedle is a dependency injection visualisation framework built directly on t
 
 ## Optimistic Logging
 
-KnitNeedle improves upon Knit's internal logging system -- Knit does not produce a JSON dump if compilation was unsuccessful, meaning that such errors are not very visible to the user. To solve this issue, KnitNeedle employs optimistic logging -- meaning that even if dependency injection related errors occur, the exact classes that led to the flagged issue(s) appear in the JSON dump.
+KnitNeedle improves upon Knit's internal logging system -- Knit does not produce a JSON dump if compilation was unsuccessful, meaning that such errors are not very visible to the user. To solve this issue, KnitNeedle employs **optimistic logging** -- meaning that even if dependency injection errors occur, the exact classes that led to the flagged issue(s) appear in the JSON dump and visualised.
 
-## Upstream Error Propagation
+## Downstream Error Propagation
 
-This provides KnitNeedle with the unique ability to include errored classes in its dependency visualisation, and therefore also show affected upstream classes. This is reflected in the visualised dependency graph, which provides programmers a clear view of what classes are affected, and how to quickly resolve such issues.
+This provides KnitNeedle with the unique ability to include errored classes in its dependency visualisation, and therefore also show **affected downstream classes**. This is reflected in the visualised dependency graph, which provides programmers a clear view of what classes are affected, and how to quickly resolve such issues.
 
 ## Instant Feedback System
 
-KnitNeedle quickly updates dependency graphs in response to code changes -- by taking advantage of Kotlin's incremental compilation capabilities, KnitNeedle builds upon Knit's logging system to only capture logs for parts of the codebase that have to be recompiled. This offers a significant speed increase, as KnitNeedle no longer has to traverse the whole codebase just to update a small set of nodes -- a big plus for large codebases.
+KnitNeedle quickly updates dependency graphs in response to code changes -- by taking advantage of Kotlin's **incremental compilation** capabilities, KnitNeedle builds upon Knit's logging system to only capture logs for parts of the codebase that have to be recompiled. This offers a significant speed increase, as KnitNeedle no longer has to traverse the whole codebase just to update a small set of nodes -- a big plus for large codebases.
 
 
 ## Basic Usage
@@ -56,141 +56,5 @@ In the previous case:
 - For `UserService` call-site, the only thing needs to do is construct it like a normal constructor call, and access its
   member directly.
 
-## Advance Usage 📚
-
-Check [the Advance Usage](docs/README.md) document for more, we have a separate page to show the detailed usage and some principles
-
-## Setup 📦
-
-Knit supports all JVM applications, including Android applications, and here is the latest Knit version ↓
-
-[![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/io.github.tiktok.knit.plugin?style=flat-square&color=lightskyblue)](https://plugins.gradle.org/plugin/io.github.tiktok.knit.plugin)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.tiktok.knit/knit-plugin?style=flat-square&logo=apache-maven?color=coral)](https://central.sonatype.com/artifact/io.github.tiktok.knit/knit-plugin)
-
-### Setup with Android Transform
-
-1. Apply the Knit plugin in your app module.
-    
-    Through gradle plugin portal:
-    ```groovy
-    plugins {
-        id 'com.android.application'
-        id 'org.jetbrains.kotlin.android'
-        // apply it after android & kotlin plugins
-        id 'io.github.tiktok.knit.plugin' version "${latestKnitVersion}"
-    }
-    ```
-
-    Through maven central:
-    ```groovy
-    buildscript {
-        repositories {
-            mavenCentral()
-        }
-        dependencies {
-            classpath("io.github.tiktok.knit:knit-plugin:$latestKnitVersion")
-        }
-    }
-
-    // apply it after android & kotlin plugins
-    apply(plugin: "io.github.tiktok.knit.plugin")
-    ```
-
-2. Add runtime dependencies to the module which wants to use Knit.
-
-    ```groovy
-    dependencies {
-        implementation("io.github.tiktok.knit:knit-android:$latestKnitVersion")
-    }
-    ```
-
-### Setup for other JVM applications
-
-Knit is isolated from the Android transform process, you can apply Knit plugin for other JVM applications.
-
-1. Add classpath to your project's buildscript `build.gradle`.
-    
-    ```groovy
-    buildscript {
-        repositories {
-            mavenCentral()
-        }
-        dependencies {
-            classpath "io.github.tiktok.knit:knit-plugin:$latestKnitVersion"
-        }
-    }
-    ```
-2. Apply the following plugin in your application module.
-    
-    ```groovy
-    apply(plugin: "io.github.tiktok.knit.plugin")
-    ```
-3. For runtime dependencies, depends on `knit` rather than `knit-android`.
-
-    ```groovy
-    dependencies {
-        implementation("io.github.tiktok.knit:knit:$latestKnitVersion")
-    }
-    ```
-After applying the Knit plugin, Knit will generate some tasks for your `jar` tasks which named with `WithKnit` suffix, for example:
-
-- `jar` task will generate a `jarWithKnit` task.
-- `shadowJar` task will generate a `shadowJarWithKnit` task.
-
-We recommend you to use [shadowJar](https://github.com/GradleUp/shadow) to ensure all dependencies are included in the jar file, otherwise you may encounter some issues when Knit can't find the dependency providers.
-
-We have a sample project to show how to use Knit with a shadow jar application, check [demo-jvm](demo-jvm) module for more details.
-
-### Setup with ByteX
-
-[ByteX](https://github.com/bytedance/bytex) is a bytecode transformation framework which can make all bytecode transformation plugin shares the same transform pipeline. With ByteX, Knit can runs incrementally, usually faster than run the whole Android transform process.
-
-1. Make sure you have well configured [ByteX](https://github.com/bytedance/bytex) in your project.
-2. Add classpath to your project's buildscript `build.gradle`.
-
-    ```groovy
-    buildscript {
-        repositories {
-            mavenCentral()
-        }
-        dependencies {
-            classpath "io.github.tiktok.knit:knit-bytex:$latestKnitVersion"
-        }
-    }
-    ```
-
-3. Apply the following plugin in your app module.
-
-    ```groovy
-    apply plugin: 'tiktok.knit.plugin'
-
-    Knit {
-        enable true
-        enableInDebug true
-    }
-    ```
-
-4. Add runtime dependencies to the module which wants to use Knit.
-    ```groovy
-    dependencies {
-        implementation("tiktok.knit:knit-android:$latestKnitVersion")
-    }
-    ```
-
-## License
-
-```
-Copyright 2025 TikTok Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
+## Disclaimer
+KnitNeedle is a fork of the original Knit repository.
