@@ -9,13 +9,20 @@ KnitNeedle is a dependency injection visualisation framework built directly on t
 
 KnitNeedle improves upon Knit's internal logging system -- Knit does not produce a JSON dump if compilation was unsuccessful, meaning that such errors are not very visible to the user. To solve this issue, KnitNeedle employs **optimistic logging** -- meaning that even if dependency injection errors occur, the exact classes that led to the flagged issue(s) appear in the JSON dump and visualised.
 
+<img width="446" height="345" alt="image" src="https://github.com/user-attachments/assets/9a311036-9000-45a4-9f1c-ac76917697b2" />
+
+
 ## Downstream Error Propagation
 
 This provides KnitNeedle with the unique ability to include errored classes in its dependency visualisation, and therefore also show **affected downstream classes**. This is reflected in the visualised dependency graph, which provides programmers a clear view of what classes are affected, and how to quickly resolve such issues.
 
+<img width="269" height="303" alt="image" src="https://github.com/user-attachments/assets/41b1246b-ca49-4b93-835b-f51515d6f82e" />
+
+
 ## Instant Feedback System
 
 KnitNeedle quickly updates dependency graphs in response to code changes -- by taking advantage of Kotlin's **incremental compilation** capabilities, KnitNeedle builds upon Knit's logging system to only capture logs for parts of the codebase that have to be recompiled. This offers a significant speed increase, as KnitNeedle no longer has to traverse the whole codebase just to update a small set of nodes -- a big plus for large codebases.
+
 
 
 ## Basic Usage
