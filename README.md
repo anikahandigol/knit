@@ -12,9 +12,9 @@ KnitNeedle improves upon Knit's internal logging system -- Knit does not produce
 <img width="446" height="345" alt="image" src="https://github.com/user-attachments/assets/9a311036-9000-45a4-9f1c-ac76917697b2" />
 
 
-## Downstream Error Propagation
+## Upstream Errors
 
-This provides KnitNeedle with the unique ability to include errored classes in its dependency visualisation, and therefore also show **affected downstream classes**. This is reflected in the visualised dependency graph, which provides programmers a clear view of what classes are affected, and how to quickly resolve such issues.
+This provides KnitNeedle with the unique ability to include errored classes in its dependency visualisation, and therefore also show **affected upstream classes**. This is reflected in the visualised dependency graph, which provides programmers a clear view of what classes are affected, and how to quickly resolve such issues.
 
 <img width="269" height="303" alt="image" src="https://github.com/user-attachments/assets/41b1246b-ca49-4b93-835b-f51515d6f82e" />
 
